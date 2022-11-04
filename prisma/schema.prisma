@@ -10,129 +10,122 @@ datasource db {
   url      = env("DATABASE_URI")
 }
 
-model Employee {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email           String    @unique
-  password        String
-  isEmailVerified Boolean   @default(false)
-  firstname       String
-  lastname        String?
-  phone           String?
-  createdAt       DateTime? @default(now())
-  companyId       String    @db.Uuid
-  roleId          String    @db.Uuid
+model School {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime? @default(now())
 
-  Company    Company                @relation(fields: [companyId], references: [id])
-  Role       Role                   @relation(fields: [roleId], references: [id])
-  Department EmployeeOnDepartment[]
-  Invoice    Invoice[]
+  adress      String
+  zip         Int
+  city        String
+  countryCode String @default("DK")
+
+  People PersonToSchool[]
+}
+
+model PersonToSchool {
+  schoolId String @db.Uuid
+  School   School @relation(fields: [schoolId], references: [id])
+  personId String @db.Uuid
+  Person   Person @relation(fields: [personId], references: [id])
+
+  @@id([schoolId, personId])
+}
+
+model CustodianToPerson {
+  custodianId String @db.Uuid
+  childId     String @db.Uuid
+
+  Custodian Person? @relation("Custodian", fields: [custodianId], references: [id])
+  Children  Person? @relation("Children", fields: [childId], references: [id])
+
+  @@id([custodianId, childId])
+}
+
+model Person {
+  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parentId String? @db.Uuid
+
+  Users      User[]
+  Profile    Profile?
+  Children   CustodianToPerson[] @relation("Children")
+  Custodians CustodianToPerson[] @relation("Custodian")
+
+  Schools PersonToSchool[]
+}
+
+model Profile {
+  id          String  @id @default(dbgenerated("gen_random_uuid()"))
+  firstname   String
+  lastname    String
+  age         Int?
+  phone       String?
+  address     String?
+  city        String?
+  zip         Int?
+  countryCode String  @default("DK")
+
+  personId String @unique
+  Person   Person @relation(fields: [personId], references: [id])
+}
+
+// User is the table used for accessing the application
+model User {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email      String  @unique
+  isVerified Boolean @default(false)
+  password   String
+
+  personId String @db.Uuid
+  Person   Person @relation(fields: [personId], references: [id])
+
+  roleId Int
+  Role   Role @relation(fields: [roleId], references: [id])
+}
+
+enum RoleType {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+  DIRECTOR
 }
 
 model Role {
-  id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name     String     @default("employee")
-  Employee Employee[]
+  id    Int      @id @default(autoincrement())
+  name  RoleType @default(STUDENT)
+  Users User[]
+
+  Permissions RoleToPermission[]
 }
 
-model Company {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  cvr       String    @unique
-  createdAt DateTime? @default(now())
+model RoleToPermission {
+  roleId       Int
+  permissionId Int
+  Permission   Permission @relation(fields: [permissionId], references: [id])
+  Role         Role       @relation(fields: [roleId], references: [id])
 
-  Employees  Employee[]
-  Department Department[]
-  Invoice    Invoice[]
-  Product    Product[]
-  Customer   Customer[]
+  @@id([roleId, permissionId])
 }
 
-model Department {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  isHQ      Boolean   @default(false)
-  country   String
-  street    String
-  city      String
-  zip       String
-  companyId String    @db.Uuid
-  createdAt DateTime? @default(now())
-
-  Company   Company                @relation(fields: [companyId], references: [id])
-  Employees EmployeeOnDepartment[]
-  Invoice   Invoice[]
+enum PermissionType {
+  READ
+  READ_ALL
+  WRITE
+  WRITE_ALL
 }
 
-model EmployeeOnDepartment {
-  employeeId   String    @db.Uuid
-  departmentId String    @db.Uuid
-  dateAdded    DateTime? @default(now())
-
-  Employee   Employee   @relation(fields: [employeeId], references: [id])
-  Department Department @relation(fields: [departmentId], references: [id])
-
-  @@id([employeeId, departmentId])
+enum ResourceType {
+  SCHOOL
+  TEACHER
+  STUDENT
+  USER
 }
 
-model Customer {
-  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email     String @unique
-  firstname String
-  lastname  String
-  phone     String @unique
-  street    String
-  city      String
-  country   String
-  zip       String
+model Permission {
+  id       Int            @id @default(autoincrement())
+  resource ResourceType
+  type     PermissionType
 
-  companyId String @db.Uuid
-
-  Company  Company   @relation(fields: [companyId], references: [id])
-  Vehicles Vehicle[]
-  Invoices Invoice[]
-}
-
-model Vehicle {
-  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  brand              String
-  model              String
-  registrationNumber String
-  customerId         String    @db.Uuid
-  customer           Customer  @relation(fields: [customerId], references: [id])
-  createdAt          DateTime? @default(now())
-  Invoice            Invoice[]
-}
-
-model Invoice {
-  id           Int       @unique @default(autoincrement())
-  companyId    String    @db.Uuid
-  departmentId String    @db.Uuid
-  employeeId   String    @db.Uuid
-  customerId   String    @db.Uuid
-  vehicleId    String    @db.Uuid
-  totalPrice   Float
-  createdAt    DateTime? @default(now())
-  payedAt      DateTime?
-
-  Products Product[]
-
-  Vehicle    Vehicle    @relation(fields: [vehicleId], references: [id])
-  Company    Company    @relation(fields: [companyId], references: [id])
-  Department Department @relation(fields: [departmentId], references: [id])
-  Employee   Employee   @relation(fields: [employeeId], references: [id])
-  Customer   Customer   @relation(fields: [customerId], references: [id])
-
-  @@id([id, companyId])
-}
-
-model Product {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  description String
-  price       Float
-  companyId   String    @db.Uuid
-  createdAt   DateTime? @default(now())
-  invoiceId   Int
-
-  Company Company @relation(fields: [companyId], references: [id])
-  Invoice Invoice @relation(fields: [invoiceId], references: [id])
+  Roles RoleToPermission[]
 }

@@ -19,31 +19,21 @@ const items: IMenubarItem[] = [
     icon: IconEnum.Dashboard,
   },
   {
-    link: '/customers',
-    text: 'Customers',
-    icon: IconEnum.Customer,
-  },
-  {
-    link: '/departments',
-    text: 'Departments',
+    link: '/schools',
+    text: 'Schools',
     icon: IconEnum.Department,
   },
   {
-    link: '/invoices',
-    text: 'Invoices',
-    icon: IconEnum.Invoice,
+    link: '/teachers',
+    text: 'Teachers',
+    icon: IconEnum.Customer,
   },
   {
-    link: '/employees',
-    text: 'Employees',
+    link: '/kids',
+    text: 'Kids',
     icon: IconEnum.Employee,
   },
-].sort((a, b) => {
-  if (a.text > b.text) {
-    return 1;
-  }
-  return -1;
-});
+];
 
 function MyApp({ Component, pageProps: { session, ...pageProps }, user }: any) {
   const isAuthenticated = !!user;
