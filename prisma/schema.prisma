@@ -15,16 +15,15 @@ datasource db {
 }
 
 model School {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
-  createdAt   DateTime? @default(now())
+  createdAt   DateTime?        @default(now())
   adress      String
   zip         Int
   city        String
-  countryCode String    @default("DK")
-
-  People PersonToSchool[]
-  Class  Class[]
+  countryCode String           @default("DK")
+  People      PersonToSchool[]
+  Class       Class[]
 }
 
 model PersonToSchool {
@@ -45,36 +44,38 @@ model CustodianToPerson {
   @@id([custodianId, childId])
 }
 
+model Email {
+  email    String  @id
+  personId String  @db.Uuid
+  Person   Person? @relation(fields: [personId], references: [id])
+}
+
 model Person {
   id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   Users                User[]
-  Profile              Profile?
+  firstname            String
+  lastname             String
+  age                  Int?
+  phone                String?
+  address              String?
+  city                 String?
+  zip                  Int?
+  countryCode          String              @default("DK")
   Children             CustodianToPerson[] @relation("Children")
   Custodians           CustodianToPerson[] @relation("Custodian")
   Schools              PersonToSchool[]
   Attendence           Attendence[]
   PersonToClass        PersonToClass[]
   AttendenceRegistered Attendence[]        @relation("AttendenceRegistration")
-}
-
-model Profile {
-  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstname   String
-  lastname    String
-  age         Int?
-  phone       String?
-  address     String?
-  city        String?
-  zip         Int?
-  countryCode String  @default("DK")
-  personId    String  @unique @db.Uuid
-  Person      Person  @relation(fields: [personId], references: [id])
+  Class                Class[]
+  Note                 Note[]
+  Email                Email[]
 }
 
 // User is the table used for accessing the application
 model User {
   id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email      String  @unique
+  username   String  @unique
   isVerified Boolean @default(false)
   password   String
   personId   String  @db.Uuid
@@ -143,14 +144,27 @@ model Attendence {
   @@id([lectureId, personId])
 }
 
+model Note {
+  id          String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lecutureId  String   @db.Uuid
+  Lecture     Lecture  @relation(fields: [lecutureId], references: [id])
+  text        String
+  createdAt   DateTime @default(now())
+  createdById String   @db.Uuid
+  CreatedBy   Person   @relation(fields: [createdById], references: [id])
+
+  @@id([id, lecutureId])
+}
+
 model Lecture {
   id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   startAt    DateTime
   endAt      DateTime
+  Notes      Note[]
   Attendence Attendence[]
 }
 
-enum ClassRoles {
+enum ClassRolesType {
   TEACHER
   STUDENT
   DIRECTOR
@@ -158,22 +172,24 @@ enum ClassRoles {
 }
 
 model PersonToClass {
-  personId  String     @db.Uuid
-  classId   String     @db.Uuid
-  roleType  ClassRoles @default(STUDENT)
-  joinedAt  DateTime   @default(now())
+  personId  String         @db.Uuid
+  classId   String         @db.Uuid
+  roleType  ClassRolesType @default(STUDENT)
+  joinedAt  DateTime       @default(now())
   removedAt DateTime?
-  Class     Class      @relation(fields: [classId], references: [id])
-  Person    Person     @relation(fields: [personId], references: [id])
+  Class     Class          @relation(fields: [classId], references: [id])
+  Person    Person         @relation(fields: [personId], references: [id])
 
   @@id([personId, classId, roleType])
 }
 
 model Class {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String
-
-  schoolId String          @db.Uuid
-  School   School          @relation(fields: [schoolId], references: [id])
-  People   PersonToClass[]
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  schoolId    String          @db.Uuid
+  createdAt   DateTime        @default(now())
+  createdById String          @db.Uuid
+  CreatedBy   Person          @relation(fields: [createdById], references: [id])
+  School      School          @relation(fields: [schoolId], references: [id])
+  People      PersonToClass[]
 }

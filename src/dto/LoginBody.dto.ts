@@ -4,7 +4,7 @@ export class LoginBody {
   @IsNotEmpty()
   @IsString()
   @IsEmail()
-  email: string;
+  username: string;
 
   @IsNotEmpty()
   @IsString()

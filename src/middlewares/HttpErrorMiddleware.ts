@@ -1,11 +1,11 @@
 import { ValidationError } from 'class-validator';
 import { Middleware } from 'next-api-middleware';
 import { HttpError } from '../errors/http/HttpError';
-import { UserNotFoundError } from '../errors/UserNotFoundError';
+import { ResourceNotFound } from '../errors/ResourceNotFound';
 import { WrongPasswordError } from '../errors/WrongPasswordError';
 import { transformErrorObject, transformValidationError } from '../services/transformers/httpErrorTransformer';
 
-const unAuthorized = [UserNotFoundError.name, WrongPasswordError.name];
+const unAuthorized = [ResourceNotFound.name, WrongPasswordError.name];
 
 export const HttpErrorMiddleware: Middleware = async (req, res, next) => {
   try {

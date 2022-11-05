@@ -1,8 +1,7 @@
 import type { GetServerSideProps, NextPage } from 'next';
-import { Router, useRouter } from 'next/router';
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import * as Styled from '../../styles/login.styles';
-import { Surface } from '../../components/atoms/surface';
 import { Text } from '../../components/atoms/text';
 
 import { withPageRedirectMiddleware } from '../../middlewares/PageRedirectMiddleware';
@@ -15,8 +14,8 @@ import { CenteredLayout, CenteredLayoutContent } from '../../layouts/centered';
 // TODO Manage error
 
 const Home: NextPage = () => {
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
-  const [{ isLoading }, call] = useFetch<any>('/api/auth/login');
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [{ isLoading }, call] = useFetch('/api/auth/login');
   const router = useRouter();
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCredentials({ ...credentials, [event.target.name]: event.target.value });
@@ -35,7 +34,6 @@ const Home: NextPage = () => {
                 data: credentials,
                 method: 'POST',
               });
-              console.log({ response });
               if (response?.status === 200) {
                 router.push('/');
               }
@@ -43,8 +41,8 @@ const Home: NextPage = () => {
           >
             <Text size="xLarge">Login</Text>
             <Inputter.InputGroup>
-              <Inputter.InputLabel>Email</Inputter.InputLabel>
-              <Inputter.InputField name="email" onChange={handleChange} value={credentials.email} />
+              <Inputter.InputLabel>Username</Inputter.InputLabel>
+              <Inputter.InputField name="username" onChange={handleChange} value={credentials.username} />
               {/* <Inputter.Description>this is a description</Inputter.Description> */}
             </Inputter.InputGroup>
             <Inputter.InputGroup>

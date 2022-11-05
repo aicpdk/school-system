@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import axios, { AxiosRequestConfig } from 'axios';
 
-interface IUserFetchState<T> {
+interface IUserFetchState<DataType> {
   isLoading: boolean;
-  data: T | null;
+  data: DataType | null;
 }
 
 const init: IUserFetchState<any> = {
@@ -11,8 +11,10 @@ const init: IUserFetchState<any> = {
   data: null,
 };
 
-export function useFetch<T>(url?: string): [state: IUserFetchState<any>, execute: (options: AxiosRequestConfig<T>) => Promise<Response | undefined>] {
-  const [state, setState] = useState<IUserFetchState<T>>(init);
+export function useFetch<DataType>(
+  url?: string
+): [state: IUserFetchState<any>, execute: (options: AxiosRequestConfig<DataType>) => Promise<Response | undefined>] {
+  const [state, setState] = useState<IUserFetchState<DataType>>(init);
 
   const execute = async (options: AxiosRequestConfig<any>) => {
     console.log('isExecuting');

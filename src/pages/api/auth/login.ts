@@ -12,17 +12,15 @@ import { authenticate } from '../../../services/authentication.service';
 // const cookieExpirationDate = 1000 * 60 * 60 * 24 * 2;
 
 export const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-  const { email, password } = req.body as LoginBody;
+  const { username, password } = req.body as LoginBody;
 
-  const { companyId, email: userEmail, firstname, userId } = await authenticate(email, password);
+  const { lastname, personId, firstname, userId } = await authenticate(username, password);
 
   req.session.user = {
-    companyId,
+    personId,
     firstname,
-    id: userId,
-    email: userEmail,
+    userId,
     lastname: '',
-    phone: '',
   };
 
   await req.session.save();

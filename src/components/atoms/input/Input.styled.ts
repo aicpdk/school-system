@@ -16,7 +16,7 @@ export const Input = styled.input<IInputFieldProps>`
   border-radius: ${themeBorderRadiusSelector};
   font-size: ${themeFontSizeSelector('regular')};
   padding: ${themePaddingSelector(2)};
-  color: ${themeColorSelector('text')};
+  color: ${themeColorSelector('gray50')};
 
   &:focus {
     border-color: ${themeColorSelector('primary')};
