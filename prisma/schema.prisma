@@ -5,22 +5,26 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
 datasource db {
-  provider = "postgresql"
+  provider = "cockroachdb"
   url      = env("DATABASE_URI")
 }
 
 model School {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  createdAt DateTime? @default(now())
-
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  createdAt   DateTime? @default(now())
   adress      String
   zip         Int
   city        String
-  countryCode String @default("DK")
+  countryCode String    @default("DK")
 
   People PersonToSchool[]
+  Class  Class[]
 }
 
 model PersonToSchool {
@@ -33,29 +37,28 @@ model PersonToSchool {
 }
 
 model CustodianToPerson {
-  custodianId String @db.Uuid
-  childId     String @db.Uuid
-
-  Custodian Person? @relation("Custodian", fields: [custodianId], references: [id])
-  Children  Person? @relation("Children", fields: [childId], references: [id])
+  custodianId String  @db.Uuid
+  childId     String  @db.Uuid
+  Custodian   Person? @relation("Custodian", fields: [custodianId], references: [id])
+  Children    Person? @relation("Children", fields: [childId], references: [id])
 
   @@id([custodianId, childId])
 }
 
 model Person {
-  id       String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  parentId String? @db.Uuid
-
-  Users      User[]
-  Profile    Profile?
-  Children   CustodianToPerson[] @relation("Children")
-  Custodians CustodianToPerson[] @relation("Custodian")
-
-  Schools PersonToSchool[]
+  id                   String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Users                User[]
+  Profile              Profile?
+  Children             CustodianToPerson[] @relation("Children")
+  Custodians           CustodianToPerson[] @relation("Custodian")
+  Schools              PersonToSchool[]
+  Attendence           Attendence[]
+  PersonToClass        PersonToClass[]
+  AttendenceRegistered Attendence[]        @relation("AttendenceRegistration")
 }
 
 model Profile {
-  id          String  @id @default(dbgenerated("gen_random_uuid()"))
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   firstname   String
   lastname    String
   age         Int?
@@ -64,9 +67,8 @@ model Profile {
   city        String?
   zip         Int?
   countryCode String  @default("DK")
-
-  personId String @unique
-  Person   Person @relation(fields: [personId], references: [id])
+  personId    String  @unique @db.Uuid
+  Person      Person  @relation(fields: [personId], references: [id])
 }
 
 // User is the table used for accessing the application
@@ -75,12 +77,10 @@ model User {
   email      String  @unique
   isVerified Boolean @default(false)
   password   String
-
-  personId String @db.Uuid
-  Person   Person @relation(fields: [personId], references: [id])
-
-  roleId Int
-  Role   Role @relation(fields: [roleId], references: [id])
+  personId   String  @db.Uuid
+  Person     Person  @relation(fields: [personId], references: [id])
+  roleId     String  @db.Uuid
+  Role       Role    @relation(fields: [roleId], references: [id])
 }
 
 enum RoleType {
@@ -92,16 +92,15 @@ enum RoleType {
 }
 
 model Role {
-  id    Int      @id @default(autoincrement())
-  name  RoleType @default(STUDENT)
-  Users User[]
-
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        RoleType           @default(STUDENT)
+  Users       User[]
   Permissions RoleToPermission[]
 }
 
 model RoleToPermission {
-  roleId       Int
-  permissionId Int
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
   Permission   Permission @relation(fields: [permissionId], references: [id])
   Role         Role       @relation(fields: [roleId], references: [id])
 
@@ -120,12 +119,61 @@ enum ResourceType {
   TEACHER
   STUDENT
   USER
+  CLASS
+  ATTENDENCE
 }
 
 model Permission {
-  id       Int            @id @default(autoincrement())
+  id       String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   resource ResourceType
   type     PermissionType
+  Roles    RoleToPermission[]
+}
 
-  Roles RoleToPermission[]
+model Attendence {
+  lectureId      String    @db.Uuid
+  personId       String    @db.Uuid
+  attendedAt     DateTime  @default(now())
+  leftAt         DateTime?
+  registeredById String    @db.Uuid
+  RegisteredBy   Person    @relation("AttendenceRegistration", fields: [registeredById], references: [id])
+  Lecture        Lecture   @relation(fields: [lectureId], references: [id])
+  Person         Person    @relation(fields: [personId], references: [id])
+
+  @@id([lectureId, personId])
+}
+
+model Lecture {
+  id         String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  startAt    DateTime
+  endAt      DateTime
+  Attendence Attendence[]
+}
+
+enum ClassRoles {
+  TEACHER
+  STUDENT
+  DIRECTOR
+  GUEST
+}
+
+model PersonToClass {
+  personId  String     @db.Uuid
+  classId   String     @db.Uuid
+  roleType  ClassRoles @default(STUDENT)
+  joinedAt  DateTime   @default(now())
+  removedAt DateTime?
+  Class     Class      @relation(fields: [classId], references: [id])
+  Person    Person     @relation(fields: [personId], references: [id])
+
+  @@id([personId, classId, roleType])
+}
+
+model Class {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name String
+
+  schoolId String          @db.Uuid
+  School   School          @relation(fields: [schoolId], references: [id])
+  People   PersonToClass[]
 }
