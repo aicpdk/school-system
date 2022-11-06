@@ -11,7 +11,7 @@ declare module 'iron-session' {
 }
 
 export const sessionConfig = {
-  cookieName: 'escale_session',
+  cookieName: 'aicpdk',
   password: process.env.SESSION_SECRET_KEY!,
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
