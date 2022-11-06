@@ -29,8 +29,8 @@ const items: IMenubarItem[] = [
     icon: IconEnum.Customer,
   },
   {
-    link: '/kids',
-    text: 'Kids',
+    link: '/students',
+    text: 'Students',
     icon: IconEnum.Employee,
   },
 ];
