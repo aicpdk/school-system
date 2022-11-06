@@ -10,10 +10,6 @@ declare module 'iron-session' {
   }
 }
 
-if (!process.env.SESSION_SECRET_KEY) {
-  throw new Error('Missing SESSION_SECRET_KEY in .env file');
-}
-
 export const sessionConfig = {
   cookieName: 'aicpdk',
   password: process.env.SESSION_SECRET_KEY!,
