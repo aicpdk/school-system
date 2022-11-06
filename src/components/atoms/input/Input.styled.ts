@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { getHoverColor, themeBorderRadiusSelector, themeColorSelector, themeFontSizeSelector, themePaddingSelector } from '../../../config/theme';
+import { themeBorderRadiusSelector, themeColorSelector, themeFontSizeSelector, themePaddingSelector } from '../../../config/theme';
 import { IInputFieldProps } from './Input.types';
 
 export const Container = styled.div`
@@ -16,10 +16,21 @@ export const Input = styled.input<IInputFieldProps>`
   border-radius: ${themeBorderRadiusSelector};
   font-size: ${themeFontSizeSelector('regular')};
   padding: ${themePaddingSelector(2)};
-  color: ${themeColorSelector('gray50')};
+  color: ${themeColorSelector('gray900')};
+
+  transition: all 0.2s ease-in-out;
 
   &:focus {
-    border-color: ${themeColorSelector('primary')};
+    border-color: ${themeColorSelector('gray900')};
+  }
+
+  &:hover {
+    border-color: ${themeColorSelector('gray900')};
+  }
+
+  &::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: ${themeColorSelector('gray400')};
   }
 `;
 
@@ -35,5 +46,5 @@ export const InputGroup = styled.div`
 
 export const Label = styled.label`
   font-size: ${themeFontSizeSelector('large')};
-  color: ${themeColorSelector('text')};
+  color: ${themeColorSelector('gray900')};
 `;

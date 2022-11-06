@@ -119,6 +119,12 @@ export const themeFontWeightSelector = (font: keyof IFontWeight) => (props: IThe
 export const themeBorderRadiusSelector = (props: IThemeProps) => props.theme.borderRadius;
 export const themeShadowSelector = (shadow: keyof IShadow) => (props: IThemeProps) => props.theme.shadow[shadow];
 
+export const mediaQuery = {
+  mobile: '(max-width: 480px)' as const,
+  tablet: '(max-width: 1024px)' as const,
+  desktop: '(min-width: 1025px)' as const,
+};
+
 export const getHoverColor = (color: string) => {
   const hex = tinyColor(color).darken(10).toHex().toString();
   return `#${hex}`;

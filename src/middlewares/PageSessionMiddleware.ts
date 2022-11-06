@@ -1,6 +1,7 @@
 import { withIronSessionSsr } from 'iron-session/next';
 import { GetServerSideProps } from 'next';
 import { sessionConfig } from '../config/session';
+import { getUserById } from '../db/mappers/user.mapper';
 import { getPrismaClient } from '../db/prisma';
 
 export const withPageSessionMiddleware = (handler: GetServerSideProps) =>
@@ -17,9 +18,9 @@ export const withPageSessionMiddleware = (handler: GetServerSideProps) =>
       };
     };
 
-    if (!user?.email) return redirect();
+    if (!user?.userId) return redirect();
 
-    const res = await getPrismaClient().employee.findUnique({ where: { id: user.id } });
+    const res = await getUserById(user.userId);
     if (!res) return redirect();
 
     return handler(context);

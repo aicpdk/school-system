@@ -129,6 +129,8 @@ model Permission {
   resource ResourceType
   type     PermissionType
   Roles    RoleToPermission[]
+
+  @@unique([resource, type])
 }
 
 model Attendence {
@@ -180,7 +182,7 @@ model PersonToClass {
   Class     Class          @relation(fields: [classId], references: [id])
   Person    Person         @relation(fields: [personId], references: [id])
 
-  @@id([personId, classId, roleType])
+  @@id([personId, classId])
 }
 
 model Class {

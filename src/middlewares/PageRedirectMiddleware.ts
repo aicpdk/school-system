@@ -8,7 +8,7 @@ export const withPageRedirectMiddleware = (handler: GetServerSideProps) =>
 
     console.log(user);
 
-    if (user?.email) {
+    if (user?.userId) {
       return {
         redirect: {
           destination: '/',

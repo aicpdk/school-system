@@ -20,7 +20,7 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse): Promis
     personId,
     firstname,
     userId,
-    lastname: '',
+    lastname,
   };
 
   await req.session.save();

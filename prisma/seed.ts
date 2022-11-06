@@ -1,6 +1,6 @@
-import { hash } from 'bcrypt';
 import { faker } from '@faker-js/faker';
-import { PrismaClient, Employee, Department, Company, Role, EmployeeOnDepartment, Customer, Invoice, Vehicle } from '@prisma/client';
+import { PrismaClient, ResourceType, PermissionType, Permission } from '@prisma/client';
+import { hash } from '../src/services/bcrypt.service';
 
 const prisma = new PrismaClient();
 
@@ -9,151 +9,85 @@ function randomIntFromInterval(min: number, max: number) {
 }
 
 async function main() {
-  await prisma.employeeOnDepartment.deleteMany({});
-  await prisma.product.deleteMany({});
-  await prisma.invoice.deleteMany({});
-  await prisma.employee.deleteMany({});
+  await prisma.roleToPermission.deleteMany({});
+  await prisma.permission.deleteMany({});
+  await prisma.user.deleteMany({});
   await prisma.role.deleteMany({});
-  await prisma.department.deleteMany({});
-  await prisma.vehicle.deleteMany({});
-  await prisma.customer.deleteMany({});
-  await prisma.company.deleteMany({});
+  await prisma.person.deleteMany({});
 
-  const companyId = faker.datatype.uuid();
-  await prisma.company.create({
+  const people = Array.from({ length: 10 }).map(() => ({
+    id: faker.datatype.uuid(),
+    firstname: faker.name.firstName(),
+    lastname: faker.name.lastName(),
+    address: faker.address.street(),
+    age: randomIntFromInterval(20, 60),
+    phone: faker.phone.number('+45 ########'),
+    city: faker.address.cityName(),
+    countryCode: faker.address.countryCode(),
+    zip: Number(faker.address.zipCode('####')),
+  }));
+  const createPeople = people.map((person) =>
+    prisma.person.create({
+      data: person,
+    })
+  );
+  const storedPeople = await Promise.all(createPeople);
+
+  const permissionTypes: PermissionType[] = ['READ', 'READ_ALL', 'WRITE', 'WRITE_ALL'];
+  const resourceTypes: ResourceType[] = ['ATTENDENCE', 'CLASS', 'SCHOOL', 'STUDENT', 'TEACHER', 'USER'];
+  const permissions: Permission[] = [];
+  resourceTypes.forEach((resource) => {
+    permissionTypes.forEach((permission) => {
+      permissions.push({
+        id: faker.datatype.uuid(),
+        resource,
+        type: permission,
+      });
+    });
+  });
+
+  const createPermissions = permissions.map((permission) =>
+    prisma.permission.create({
+      data: permission,
+    })
+  );
+  const storedPermissions = await Promise.all(createPermissions);
+
+  const adminPermissions = permissions.filter((permission) => ['READ_ALL', 'WRITE_ALL'].includes(permission.type));
+
+  const adminRole = await prisma.role.create({
     data: {
-      id: companyId,
-      name: faker.company.name(),
-      cvr: faker.datatype.number({ min: 10000000, max: 99999999 }).toString(),
-      createdAt: new Date(),
+      id: faker.datatype.uuid(),
+      name: 'ADMIN',
     },
   });
 
-  const roles: Role[] = [
-    { id: faker.datatype.uuid(), name: 'admin' },
-    { id: faker.datatype.uuid(), name: 'employee' },
-  ];
-  await prisma.role.createMany({ data: roles });
+  await prisma.roleToPermission.createMany({
+    data: adminPermissions.map((permission) => ({
+      permissionId: permission.id,
+      roleId: adminRole.id,
+    })),
+  });
 
-  // the reason is to be able to login with these accounts
-  const password = await hash('Test!123', 10);
-  const employees: Employee[] = [];
-  for (let index = 0; index < 20; index++) {
-    employees.push({
+  const hashedPassword = await hash('Test!123');
+  await prisma.user.create({
+    data: {
       id: faker.datatype.uuid(),
-      email: index === 0 ? 'test@test.test' : faker.internet.email(),
-      password,
-      firstname: faker.name.firstName('male'),
-      lastname: faker.name.lastName('female'),
-      phone: faker.phone.number('+45 ########'),
-      isEmailVerified: true,
-      companyId,
-      createdAt: faker.date.past(),
-      roleId: index === 0 ? roles.at(0)!.id : roles.at(1)!.id,
-    });
-  }
-
-  const departmentId = faker.datatype.uuid();
-  const departments: Department[] = Array.from({ length: 3 }).map((_, index) => ({
-    companyId,
-    id: index === 0 ? departmentId : faker.datatype.uuid(),
-    isHQ: index === 0,
-    name: faker.company.name(),
-    city: faker.address.city(),
-    street: faker.address.street(),
-    country: 'denmark',
-    zip: faker.address.zipCode('####'),
-    createdAt: faker.date.past(),
-  }));
-
-  await Promise.all([
-    prisma.employee.createMany({
-      data: employees,
-    }),
-    prisma.department.createMany({
-      data: departments,
-    }),
-  ]);
-
-  const connectEmployeeWithDepartment = async (employeeId: string, departmentId: string) =>
-    prisma.employeeOnDepartment.create({
-      data: {
-        Department: {
-          connect: { id: departmentId },
-        },
-        Employee: {
-          connect: { id: employeeId },
-        },
-        dateAdded: faker.date.past(),
-      },
-    });
-
-  const employeeOnDepartment1 = employees.slice(0, 8).map((employee) => connectEmployeeWithDepartment(employee.id, departments.at(0)!.id));
-  const employeeOnDepartment2 = employees.slice(8, 15).map((employee) => connectEmployeeWithDepartment(employee.id, departments.at(1)!.id));
-  const employeeOnDepartment3 = employees.slice(15).map((employee) => connectEmployeeWithDepartment(employee.id, departments.at(2)!.id));
-  await Promise.all([...employeeOnDepartment1, ...employeeOnDepartment2, ...employeeOnDepartment3]);
-
-  const customers = Array.from({ length: 1000 }).map(async () => {
-    return await prisma.customer.create({
-      data: {
-        id: faker.datatype.uuid(),
-        companyId,
-        email: faker.internet.email(),
-        firstname: faker.name.firstName(),
-        lastname: faker.name.lastName(),
-        phone: faker.phone.number('+45 ########'),
-        city: faker.address.city(),
-        street: faker.address.street(),
-        country: 'denmark',
-        zip: faker.address.zipCode('####'),
-        Vehicles: {
-          createMany: {
-            data: Array.from({ length: randomIntFromInterval(1, 4) }).map(() => ({
-              createdAt: faker.date.past(),
-              id: faker.datatype.uuid(),
-              brand: faker.vehicle.manufacturer(),
-              model: faker.vehicle.model(),
-              registrationNumber: faker.vehicle.vrm(),
-            })),
-          },
+      password: hashedPassword,
+      username: 'admin',
+      isVerified: false,
+      Person: {
+        connect: {
+          id: people[0].id,
         },
       },
-    });
+      Role: {
+        connect: {
+          id: adminRole.id,
+        },
+      },
+    },
   });
-  const storedCustomers = await Promise.all(customers);
-
-  const invoices = Array.from({ length: 200 }).map(async () => {
-    const products = Array.from({ length: 4 }).map(() => ({
-      Company: { connect: { id: companyId } },
-      description: faker.commerce.productDescription(),
-      price: Number(faker.commerce.price(50, 1000)),
-    }));
-
-    const customerId = storedCustomers[randomIntFromInterval(0, 999)].id;
-    const vehicles = await prisma.vehicle.findMany({
-      where: {
-        customerId,
-      },
-    });
-
-    const createdAt = faker.date.past();
-
-    return prisma.invoice.create({
-      data: {
-        companyId,
-        customerId,
-        departmentId: departments[randomIntFromInterval(0, 2)].id,
-        employeeId: employees[randomIntFromInterval(0, 19)].id,
-        totalPrice: products.reduce((prev, curr) => prev + curr.price, 0),
-        Products: { create: products },
-        vehicleId: vehicles[randomIntFromInterval(0, vehicles.length - 1)].id,
-        createdAt,
-        payedAt: randomIntFromInterval(0, 3) === 0 ? null : faker.date.between(createdAt, new Date()),
-      },
-    });
-  });
-
-  await Promise.all(invoices);
 }
 
 main()

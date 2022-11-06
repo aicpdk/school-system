@@ -42,7 +42,7 @@ const Home: NextPage = () => {
             <Text size="xLarge">Login</Text>
             <Inputter.InputGroup>
               <Inputter.InputLabel>Username</Inputter.InputLabel>
-              <Inputter.InputField name="username" onChange={handleChange} value={credentials.username} />
+              <Inputter.InputField name="username" type="text" onChange={handleChange} value={credentials.username} />
               {/* <Inputter.Description>this is a description</Inputter.Description> */}
             </Inputter.InputGroup>
             <Inputter.InputGroup>

@@ -8,7 +8,7 @@ export const authenticate = async (username: string, password: string) => {
   const user = await getUserByUsername(username);
 
   if (!user) {
-    throw new ResourceNotFound();
+    throw new ResourceNotFound('User object not found');
   }
 
   const isMatch = await compare(password, user.password);
@@ -18,7 +18,7 @@ export const authenticate = async (username: string, password: string) => {
 
   const person = await getPersonByUserId(user.id);
   if (!person) {
-    throw new ResourceNotFound();
+    throw new ResourceNotFound('Person object not found');
   }
 
   return {
@@ -28,8 +28,3 @@ export const authenticate = async (username: string, password: string) => {
     lastname: person.lastname,
   };
 };
-
-interface IAuth {
-  email: string;
-  password: string;
-}
