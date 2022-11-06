@@ -1,7 +1,8 @@
 import styled from 'styled-components';
+import { themeColorSelector, themeFontSizeSelector } from '../../../config/theme';
 
 export const Link = styled.a`
-  font-size: ${(props) => props.theme.font.regular};
+  font-size: ${themeFontSizeSelector('regular')};
   text-decoration: none;
-  color: ${(props) => 'white'};
+  color: ${themeColorSelector('gray50')};
 `;

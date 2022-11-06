@@ -9,8 +9,8 @@ export const Container = styled.aside<IStyledSidebarProps>`
   top: 0px;
   right: 0px;
 
-  background-color: ${themeColorSelector('surface')};
-  border: 1px solid ${themeColorSelector('borderPassive')};
+  background-color: ${themeColorSelector('gray50')};
+  border: 1px solid ${themeColorSelector('gray200')};
   z-index: 99;
 
   transition: transform 0.2s ease-in-out;
@@ -26,7 +26,7 @@ export const SidebarHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid ${themeColorSelector('borderPassive')};
+  border-bottom: 1px solid ${themeColorSelector('gray200')};
   padding-bottom: ${themePaddingSelector(2)};
 `;
 
@@ -49,7 +49,7 @@ export const SidebarBackground = styled.div`
   position: absolute;
   top: 0px;
   right: 0px;
-  border-left: 1px solid ${themeColorSelector('borderPassive')};
+  border-left: 1px solid ${themeColorSelector('gray200')};
   background-color: rgba(0, 0, 0, 0.8);
   z-index: 98;
 `;
