@@ -1,4 +1,5 @@
 import NextNProgress from 'nextjs-progressbar';
+import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from 'styled-components';
 import { GlobalStyles, Container, Content } from '../styles/global.styles';
 import 'animate.css';
@@ -43,6 +44,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, user }: any) {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
+      <Analytics />
       <NextNProgress color={theme.colors.primary500} showOnShallow={false} height={4} />
       <Container>
         {showMenu && <Menubar items={items} />}
