@@ -16,8 +16,6 @@ export const GlobalStyles = createGlobalStyle`
   #__next {
     height: 100vh;
     width: 100vw;
-
-    
   }
 
   *:focus {
