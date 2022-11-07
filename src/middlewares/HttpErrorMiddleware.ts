@@ -4,6 +4,7 @@ import { HttpError } from '../errors/http/HttpError';
 import { ResourceNotFound } from '../errors/ResourceNotFound';
 import { WrongPasswordError } from '../errors/WrongPasswordError';
 import { transformErrorObject, transformValidationError } from '../services/transformers/httpErrorTransformer';
+import * as Sentry from '@sentry/nextjs';
 
 const unAuthorized = [ResourceNotFound.name, WrongPasswordError.name];
 
@@ -12,6 +13,7 @@ export const HttpErrorMiddleware: Middleware = async (req, res, next) => {
     await next();
   } catch (e) {
     const error = e as any;
+    Sentry.captureException(e);
 
     if (error instanceof Array<ValidationError>) {
       return res.status(400).json({ errors: transformValidationError(error) });
