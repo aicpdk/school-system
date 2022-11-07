@@ -12,11 +12,11 @@ export const Table = styled.table`
 
   border-radius: ${themeBorderRadiusSelector};
   overflow: hidden;
-  border: 1px solid ${themeColorSelector('borderPassive')};
+  border: 1px solid ${themeColorSelector('gray200')};
 `;
 
 export const Columns = styled.thead`
-  background-color: ${themeColorSelector('primary')};
+  background-color: ${themeColorSelector('primary500')};
 `;
 
 export const Rows = styled.tbody`
@@ -38,13 +38,13 @@ export const Row = styled.tr`
   transition: all 0.1s ease-in-out;
 
   &:not([data-type='head']):hover {
-    background-color: ${themeColorSelector('borderActive')};
+    background-color: ${themeColorSelector('gray400')};
     cursor: pointer;
   }
 `;
 
 export const Column = styled.th<{ width: string }>`
-  color: ${themeColorSelector('activeText')};
+  color: ${themeColorSelector('gray900')};
   width: calc(100% - ${themePaddingSelector(2)} * 2);
   padding: ${themePaddingSelector(2)} ${themePaddingSelector(2)};
   text-align: left;
