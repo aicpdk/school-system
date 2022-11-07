@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { withSentry } from '@sentry/nextjs';
 
 import { use } from 'next-api-middleware';
 import { HttpErrorMiddleware } from '../../../middlewares/HttpErrorMiddleware';
@@ -13,4 +14,4 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse): Promis
   res.redirect(301, '/login');
 };
 
-export default withApiSessionMiddleware(use(HttpErrorMiddleware, HttpMethodMiddleware(['GET']))(handler));
+export default withSentry(withApiSessionMiddleware(use(HttpErrorMiddleware, HttpMethodMiddleware(['GET']))(handler)));
