@@ -8,6 +8,7 @@ import { withApiSessionMiddleware } from '../../../middlewares/ApiSessionMiddlew
 import { HttpValidationMiddleware } from '../../../middlewares/HttpValidationMiddleware';
 import { LoginBody } from '../../../dto/LoginBody.dto';
 import { authenticate } from '../../../services/authentication.service';
+import { withSentry } from '@sentry/nextjs';
 
 // const cookieExpirationDate = 1000 * 60 * 60 * 24 * 2;
 
@@ -28,4 +29,6 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse): Promis
   res.redirect(301, '/');
 };
 
-export default withApiSessionMiddleware(use(HttpErrorMiddleware, HttpMethodMiddleware(['POST']), HttpValidationMiddleware(LoginBody))(handler));
+export default withSentry(
+  withApiSessionMiddleware(use(HttpErrorMiddleware, HttpMethodMiddleware(['POST']), HttpValidationMiddleware(LoginBody))(handler))
+);
