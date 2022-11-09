@@ -1,40 +1,49 @@
-import { ITableProps } from './Table.types';
-import * as Styled from './Table.styled';
-import { useMemo } from 'react';
+import { ITableFooterProps, ITableProps, ITableSearchProps } from './Table.types';
+import {
+  Table as StyledTable,
+  Column,
+  DataCell,
+  Row,
+  TBody,
+  THead,
+  LeftPagination,
+  TablePaginationContainer,
+  RightPagination,
+  TableInputContainer,
+  TableInput,
+} from './Table.styled';
+import { Button } from '../button';
+import { Icon } from '../icon';
+import { IconEnum } from '../icon/icon.types';
+import { theme } from '../../../config/theme';
 
-export function Table<T>({ columns, data, onClick, spacing }: ITableProps<T>) {
-  const columnRow = (
-    <Styled.Columns>
-      <Styled.Row data-type="head">
-        {columns.map((column, index) => (
-          <Styled.Column width={spacing[column] as string} key={`column_${index}`}>
-            {column.toString()?.at(0)?.toUpperCase()}
-            {column.toString()?.slice(1)}
-          </Styled.Column>
-        ))}
-      </Styled.Row>
-    </Styled.Columns>
-  );
+export const Table = ({ children }: ITableProps) => {
+  return <StyledTable>{children}</StyledTable>;
+};
 
-  const dataRows = data.map((data: any, rowIndex: number) => {
-    const columnRows = columns.map((value, cellIndex) => {
-      return <Styled.DataCell key={`datarow_${rowIndex}_datacell_index_${cellIndex}`}>{data[value]}</Styled.DataCell>;
-    });
-
-    return (
-      <Styled.Row onClick={() => onClick(data, rowIndex)} key={`datarow_${rowIndex}`}>
-        {columnRows}
-      </Styled.Row>
-    );
-  });
-
+export const TableSearch: React.FC<ITableSearchProps> = ({ value, onChange }) => {
   return (
-    <Styled.Table>
-      {columnRow}
-      <Styled.Rows>{dataRows}</Styled.Rows>
-    </Styled.Table>
+    <TableInputContainer>
+      <TableInput placeholder="Search..." width={'100%'} value={value} onChange={onChange} />
+    </TableInputContainer>
   );
-}
+};
 
-export const TableRow = Styled.Row;
-export const TableCell = Styled.DataCell;
+export const TablePagination: React.FC<ITableFooterProps> = ({ isNextDisabled, isPrevDisabled, onNext, onPrev }) => {
+  return (
+    <TablePaginationContainer>
+      <Button disabled={isPrevDisabled} variant="text" onClick={onPrev}>
+        <Icon name={IconEnum.ArrowLeft} disabled={isPrevDisabled} color={theme.colors.primary500} size={20} />
+      </Button>
+      <Button disabled={isNextDisabled} variant="text" onClick={onNext}>
+        <Icon name={IconEnum.ArrowRight} disabled={isNextDisabled} color={theme.colors.primary500} size={20} />
+      </Button>
+    </TablePaginationContainer>
+  );
+};
+
+export const Th = Column;
+export const Td = DataCell;
+export const Tr = Row;
+export const Tbody = TBody;
+export const Thead = THead;

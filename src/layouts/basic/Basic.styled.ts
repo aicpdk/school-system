@@ -12,7 +12,7 @@ export const Container = styled.div`
 
 export const Header = styled.header`
   width: calc(100% - ${themePaddingSelector(2)} * 2);
-  height: 40px;
+  min-height: 40px;
   padding: ${themePaddingSelector(2)};
   background-color: ${themeColorSelector('gray50')};
   border-bottom: 1px solid ${themeColorSelector('gray200')};
@@ -28,12 +28,11 @@ export const HeaderButtons = styled.div`
   align-items: center;
 `;
 
-export const Content = styled.div<IBasicLayoutContentProps>`
-  width: calc(100% - ${themePaddingSelector(2)} * 2);
+export const Content = styled.main<IBasicLayoutContentProps>`
+  /* width: calc(100% - ${themePaddingSelector(2)} * 2); */
+  width: calc(100%);
   height: 100%;
   background-color: ${themeColorSelector('gray50')};
-  padding: ${themePaddingSelector(2)};
-  overflow-y: auto;
 
   ${(props) =>
     props.flexDirection &&

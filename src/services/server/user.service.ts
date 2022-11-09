@@ -10,7 +10,6 @@ export const getUserById = (prisma: PrismaClient, id: string) => {
 
 interface ICreateUser {
   personId: string;
-  email: string;
   username: string;
   password: string;
   roleId: string;
@@ -29,6 +28,31 @@ export const createUser = (prisma: PrismaClient, user: ICreateUser) => {
       Person: {
         connect: {
           id: user.personId,
+        },
+      },
+    },
+  });
+};
+
+export const getUserWithPersmissions = (prisma: PrismaClient, userId: string) => {
+  return prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      Role: {
+        include: {
+          Permissions: {
+            include: {
+              Permission: {
+                select: {
+                  resource: true,
+                  type: true,
+                  id: true,
+                },
+              },
+            },
+          },
         },
       },
     },

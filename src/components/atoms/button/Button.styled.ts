@@ -3,13 +3,13 @@ import { getHoverColor, themeBorderRadiusSelector, themeColorSelector, themeFont
 import { IButtonStyledProps } from './Button.types';
 
 const filledVariant = css`
-  background-color: ${themeColorSelector('primary500')};
+  background-color: ${(props: any) => themeColorSelector(props.disabled ? 'gray400' : 'primary500')(props)};
   padding: ${themePaddingSelector(2)} ${themePaddingSelector(4)};
   border: none;
   color: ${themeColorSelector('gray50')};
 
   &:hover {
-    background-color: ${(props) => getHoverColor(themeColorSelector('primary500')(props))};
+    background-color: ${(props: any) => !props.disabled && getHoverColor(themeColorSelector('primary500')(props))};
   }
 `;
 
@@ -17,7 +17,7 @@ const ghostVariant = css`
   background-color: transparent;
   padding: ${themePaddingSelector(2)} ${themePaddingSelector(4)};
   border: 1px solid ${themeColorSelector('primary500')};
-  color: ${themeColorSelector('primary500')};
+  color: ${(props) => themeColorSelector('primary500')};
 
   &:hover {
     color: ${(props) => getHoverColor(themeColorSelector('primary500')(props))};
@@ -26,7 +26,7 @@ const ghostVariant = css`
 `;
 
 const textVariant = css`
-  background-color: ${themeColorSelector('primary500')};
+  background-color: ${themeColorSelector('gray50')};
   border: none;
   color: ${themeColorSelector('primary500')};
   padding: none;
@@ -55,6 +55,6 @@ export const Button = styled.button<IButtonStyledProps>`
   ${variantSelector}
 
   &:hover {
-    cursor: pointer;
+    cursor: ${(props) => !props.disabled && 'pointer'};
   }
 `;

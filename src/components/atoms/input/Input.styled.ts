@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { themeBorderRadiusSelector, themeColorSelector, themeFontSizeSelector, themePaddingSelector } from '../../../config/theme';
+import { getServerSideProps } from '../../../pages';
 import { IInputFieldProps } from './Input.types';
 
 export const Container = styled.div`
@@ -10,6 +11,7 @@ export const Container = styled.div`
 `;
 
 export const Input = styled.input<IInputFieldProps>`
+  width: ${(props) => `calc( ${props.width} - ${themePaddingSelector(2)(props)} * 2 )`};
   border-width: 1px;
   border-style: solid;
 
@@ -30,7 +32,7 @@ export const Input = styled.input<IInputFieldProps>`
 
   &::placeholder {
     /* Chrome, Firefox, Opera, Safari 10.1+ */
-    color: ${themeColorSelector('gray400')};
+    color: ${themeColorSelector('gray600')};
   }
 `;
 
