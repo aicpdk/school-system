@@ -1,4 +1,5 @@
 import NextNProgress from 'nextjs-progressbar';
+import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from 'styled-components';
 import { GlobalStyles, Container, Content } from '../styles/global.styles';
 import 'animate.css';
