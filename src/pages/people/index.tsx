@@ -22,7 +22,11 @@ import { Tag } from '../../components/atoms/tag';
 import { IPersonWithRoles } from '../../interfaces/IPerson';
 import { IColor } from '../../interfaces/ITheme';
 
-export const PeoplePage: NextPage = () => {
+interface IPeoplePageProps {
+  personId: string;
+}
+
+export const PeoplePage: NextPage<IPeoplePageProps> = ({ personId }) => {
   const peopleClientService = new PeopleClientService();
   const [globalFilter, setGlobalFilter] = useState('');
   const [{ pageIndex, pageSize }, setPagination] = useState({ pageIndex: 0, pageSize: 19 });
@@ -59,16 +63,9 @@ export const PeoplePage: NextPage = () => {
     () => [
       columnHelper.accessor('firstname', {
         header: 'Firstname',
+        cell: ({ getValue, row }) => `${getValue()} ${row.original.id === personId ? '(you)' : ''}`,
       }),
-      columnHelper.accessor('roles', {
-        header: 'Role',
-        cell: ({ getValue }) =>
-          getValue()?.map((value, index) => (
-            <Tag color={roleColors.get(value)} key={index}>
-              {value}
-            </Tag>
-          )),
-      }),
+
       columnHelper.accessor('lastname', {
         header: 'Lastname',
       }),
@@ -79,6 +76,15 @@ export const PeoplePage: NextPage = () => {
       columnHelper.accessor('age', {
         header: 'Age',
         cell: ({ getValue }) => getValue()?.toString(),
+      }),
+      columnHelper.accessor('roles', {
+        header: 'Role',
+        cell: ({ getValue }) =>
+          getValue()?.map((value, index) => (
+            <Tag color={roleColors.get(value)} key={index}>
+              {value}
+            </Tag>
+          )),
       }),
     ],
     [columnHelper]
@@ -148,11 +154,13 @@ export const PeoplePage: NextPage = () => {
 
 export default PeoplePage;
 
-const serverSideProps: GetServerSideProps = async ({ req }) => {
+const serverSideProps: GetServerSideProps<IPeoplePageProps> = async ({ req }) => {
   const { user } = req.session;
 
   return {
-    props: {},
+    props: {
+      personId: user.personId,
+    },
   };
 };
 export const getServerSideProps = withPageSessionMiddleware(serverSideProps);

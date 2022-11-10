@@ -6,7 +6,6 @@ import {
   themeFontWeightSelector,
   themePaddingSelector,
 } from '../../../config/theme';
-import { IColor } from '../../../interfaces/ITheme';
 
 export const Tag = styled.div<{ color: any }>`
   width: fit-content;
