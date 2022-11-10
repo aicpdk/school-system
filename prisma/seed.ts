@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { PrismaClient, ResourceType, PermissionType, Permission } from '@prisma/client';
-import { hash } from '../src/services/bcrypt.service';
+import { hash } from '../src/services/server/bcrypt.service';
 
 const prisma = new PrismaClient();
 
@@ -9,85 +9,103 @@ function randomIntFromInterval(min: number, max: number) {
 }
 
 async function main() {
-  await prisma.roleToPermission.deleteMany({});
-  await prisma.permission.deleteMany({});
-  await prisma.user.deleteMany({});
-  await prisma.role.deleteMany({});
-  await prisma.person.deleteMany({});
+  try {
+    await prisma.roleToPermission.deleteMany({});
+    await prisma.permission.deleteMany({});
+    await prisma.user.deleteMany({});
+    await prisma.role.deleteMany({});
+    await prisma.personToSchool.deleteMany({});
+    await prisma.school.deleteMany({});
+    await prisma.person.deleteMany({});
 
-  const people = Array.from({ length: 10 }).map(() => ({
-    id: faker.datatype.uuid(),
-    firstname: faker.name.firstName(),
-    lastname: faker.name.lastName(),
-    address: faker.address.street(),
-    age: randomIntFromInterval(20, 60),
-    phone: faker.phone.number('+45 ########'),
-    city: faker.address.cityName(),
-    countryCode: faker.address.countryCode(),
-    zip: Number(faker.address.zipCode('####')),
-  }));
-  const createPeople = people.map((person) =>
-    prisma.person.create({
-      data: person,
-    })
-  );
-  const storedPeople = await Promise.all(createPeople);
-
-  const permissionTypes: PermissionType[] = ['READ', 'READ_ALL', 'WRITE', 'WRITE_ALL'];
-  const resourceTypes: ResourceType[] = ['ATTENDENCE', 'CLASS', 'SCHOOL', 'STUDENT', 'TEACHER', 'USER'];
-  const permissions: Permission[] = [];
-  resourceTypes.forEach((resource) => {
-    permissionTypes.forEach((permission) => {
-      permissions.push({
+    const storedSchool = await prisma.school.create({
+      data: {
         id: faker.datatype.uuid(),
-        resource,
-        type: permission,
+        name: faker.commerce.department(),
+        adress: faker.address.streetAddress(),
+        city: faker.address.cityName(),
+        zip: Number(faker.address.zipCode('#####')),
+        countryCode: faker.address.countryCode(),
+      },
+    });
+
+    const people = Array.from({ length: 100 }).map(() => ({
+      id: faker.datatype.uuid(),
+      firstname: faker.name.firstName(),
+      lastname: faker.name.lastName(),
+      address: faker.address.street(),
+      age: randomIntFromInterval(20, 60),
+      phone: faker.phone.number('+45 ########'),
+      city: faker.address.cityName(),
+      countryCode: faker.address.countryCode(),
+      zip: Number(faker.address.zipCode('####')),
+    }));
+    const storedPeople = await prisma.person.createMany({
+      data: people,
+    });
+
+    const _linkPeopleToSchool = await prisma.personToSchool.createMany({
+      data: people.map((person) => ({ personId: person.id, schoolId: storedSchool.id })),
+    });
+
+    const permissionTypes: PermissionType[] = ['READ', 'READ_ALL', 'WRITE', 'WRITE_ALL'];
+    const resourceTypes: ResourceType[] = ['ATTENDENCE', 'CLASS', 'SCHOOL', 'STUDENT', 'TEACHER', 'USER'];
+    const permissions: Permission[] = [];
+    resourceTypes.forEach((resource) => {
+      permissionTypes.forEach((permission) => {
+        permissions.push({
+          id: faker.datatype.uuid(),
+          resource,
+          type: permission,
+        });
       });
     });
-  });
 
-  const createPermissions = permissions.map((permission) =>
-    prisma.permission.create({
-      data: permission,
-    })
-  );
-  const storedPermissions = await Promise.all(createPermissions);
+    const createPermissions = permissions.map((permission) =>
+      prisma.permission.create({
+        data: permission,
+      })
+    );
+    const storedPermissions = await Promise.all(createPermissions);
 
-  const adminPermissions = permissions.filter((permission) => ['READ_ALL', 'WRITE_ALL'].includes(permission.type));
+    const adminPermissions = permissions.filter((permission) => ['READ_ALL', 'WRITE_ALL'].includes(permission.type));
 
-  const adminRole = await prisma.role.create({
-    data: {
-      id: faker.datatype.uuid(),
-      name: 'ADMIN',
-    },
-  });
+    const adminRole = await prisma.role.create({
+      data: {
+        id: faker.datatype.uuid(),
+        name: 'ADMIN',
+      },
+    });
 
-  await prisma.roleToPermission.createMany({
-    data: adminPermissions.map((permission) => ({
-      permissionId: permission.id,
-      roleId: adminRole.id,
-    })),
-  });
+    await prisma.roleToPermission.createMany({
+      data: adminPermissions.map((permission) => ({
+        permissionId: permission.id,
+        roleId: adminRole.id,
+      })),
+    });
 
-  const hashedPassword = await hash('Test!123');
-  await prisma.user.create({
-    data: {
-      id: faker.datatype.uuid(),
-      password: hashedPassword,
-      username: 'admin',
-      isVerified: false,
-      Person: {
-        connect: {
-          id: people[0].id,
+    const hashedPassword = await hash('Test!123');
+    await prisma.user.create({
+      data: {
+        id: faker.datatype.uuid(),
+        password: hashedPassword,
+        username: 'admin',
+        isVerified: false,
+        Person: {
+          connect: {
+            id: people[0].id,
+          },
+        },
+        Role: {
+          connect: {
+            id: adminRole.id,
+          },
         },
       },
-      Role: {
-        connect: {
-          id: adminRole.id,
-        },
-      },
-    },
-  });
+    });
+  } finally {
+    prisma.$disconnect();
+  }
 }
 
 main()

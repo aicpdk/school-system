@@ -13,7 +13,7 @@ export const Container = styled.div<{ open: boolean }>`
   background-color: ${themeColorSelector('gray50')};
 
   padding: ${(props) => `0px ${themePaddingSelector(2)(props)}`};
-  box-shadow: ${themeShadowSelector('low')};
+
   border-right: 1px solid ${themeColorSelector('gray200')};
   z-index: 1;
 `;

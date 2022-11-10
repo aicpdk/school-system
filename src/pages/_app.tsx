@@ -11,6 +11,10 @@ import App, { AppContext } from 'next/app';
 import { sessionConfig } from '../config/session';
 import { useRouter } from 'next/router';
 import { IconEnum } from '../components/atoms/icon/icon.types';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient();
 
 // TODO: add the items to the database
 const items: IMenubarItem[] = [
@@ -25,13 +29,8 @@ const items: IMenubarItem[] = [
     icon: IconEnum.Department,
   },
   {
-    link: '/teachers',
-    text: 'Teachers',
-    icon: IconEnum.Customer,
-  },
-  {
-    link: '/students',
-    text: 'Students',
+    link: '/people',
+    text: 'People',
     icon: IconEnum.Employee,
   },
 ];
@@ -43,15 +42,17 @@ function MyApp({ Component, pageProps: { session, ...pageProps }, user }: any) {
   const showMenu = isAuthenticated && router.route !== '/404';
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <Analytics />
-      <NextNProgress color={theme.colors.primary500} showOnShallow={false} height={4} />
-      <Container>
-        {showMenu && <Menubar items={items} />}
-        <Content>
-          <Component {...pageProps} />
-        </Content>
-      </Container>
+      <QueryClientProvider client={queryClient}>
+        <GlobalStyles />
+        <NextNProgress color={theme.colors.primary500} showOnShallow={false} height={4} />
+        <Container>
+          {showMenu && <Menubar items={items} />}
+          <Content>
+            <Component {...pageProps} />
+          </Content>
+        </Container>
+        <ReactQueryDevtools />
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

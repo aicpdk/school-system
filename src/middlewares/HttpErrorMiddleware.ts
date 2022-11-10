@@ -3,7 +3,7 @@ import { Middleware } from 'next-api-middleware';
 import { HttpError } from '../errors/http/HttpError';
 import { ResourceNotFound } from '../errors/ResourceNotFound';
 import { WrongPasswordError } from '../errors/WrongPasswordError';
-import { transformErrorObject, transformValidationError } from '../services/transformers/httpErrorTransformer';
+import { transformErrorObject, transformValidationError } from '../services/server/transformers/httpErrorTransformer';
 import * as Sentry from '@sentry/nextjs';
 
 const unAuthorized = [ResourceNotFound.name, WrongPasswordError.name];

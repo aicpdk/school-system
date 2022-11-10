@@ -1,5 +1,5 @@
 import { ValidationError } from 'class-validator';
-import { IHttpError } from '../../interfaces/IHttpError';
+import { IHttpError } from '../../../interfaces/IHttpError';
 
 // TODO: only return stackTrace when in debug mode
 export const transformErrorObject = (type = 'InternalServerError', message: string, stackTrace?: string): IHttpError => {
