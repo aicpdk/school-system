@@ -64,7 +64,7 @@ model Person {
   Attendence           Attendence[]
   PersonToClass        PersonToClass[]
   AttendenceRegistered Attendence[]        @relation("AttendenceRegistration")
-  Class                Class[]
+  Class                Class[]             @relation("ClassCreated")
   Note                 Note[]
   Email                Email[]
 }
@@ -176,7 +176,7 @@ model PersonToClass {
   roleType  ClassRolesType @default(STUDENT)
   joinedAt  DateTime       @default(now())
   removedAt DateTime?
-  Class     Class          @relation(fields: [classId], references: [id])
+  Class     Class          @relation("ClassRelated", fields: [classId], references: [id])
   Person    Person         @relation(fields: [personId], references: [id])
 
   @@id([personId, classId])
@@ -188,7 +188,7 @@ model Class {
   schoolId    String          @db.Uuid
   createdAt   DateTime        @default(now())
   createdById String          @db.Uuid
-  CreatedBy   Person          @relation(fields: [createdById], references: [id])
+  CreatedBy   Person          @relation("ClassCreated", fields: [createdById], references: [id])
   School      School          @relation(fields: [schoolId], references: [id])
-  People      PersonToClass[]
+  People      PersonToClass[] @relation("ClassRelated")
 }

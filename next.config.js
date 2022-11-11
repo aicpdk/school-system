@@ -4,6 +4,7 @@ const { withSentryConfig } = require('@sentry/nextjs');
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  pageExtensions: ['page.tsx', 'page.ts'],
   compiler: {
     styledComponents: true,
   },

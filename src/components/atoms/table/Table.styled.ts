@@ -22,7 +22,7 @@ export const Table = styled.table`
 `;
 
 export const Row = styled.tr`
-  height: 40px;
+  height: 23px;
   transition: all 0.1s ease-in-out;
 `;
 
@@ -30,12 +30,12 @@ export const THead = styled.thead``;
 
 export const DataCell = styled.td`
   width: calc(100% - ${themePaddingSelector(2)} * 2);
+  height: inherit;
   padding: ${themePaddingSelector(2)} ${themePaddingSelector(2)};
-  height: 100%;
   border: 1px solid ${themeColorSelector('gray200')};
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
+  overflow-y: auto;
 `;
 
 export const TBody = styled.tbody`

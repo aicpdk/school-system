@@ -21,6 +21,7 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import { Tag } from '../../components/atoms/tag';
 import { IPersonWithRoles } from '../../interfaces/IPerson';
 import { IColor } from '../../interfaces/ITheme';
+import { List } from '../../components/atoms/list';
 
 interface IPeoplePageProps {
   personId: string;
@@ -79,12 +80,18 @@ export const PeoplePage: NextPage<IPeoplePageProps> = ({ personId }) => {
       }),
       columnHelper.accessor('roles', {
         header: 'Role',
-        cell: ({ getValue }) =>
-          getValue()?.map((value, index) => (
-            <Tag color={roleColors.get(value)} key={index}>
-              {value}
-            </Tag>
-          )),
+        cell: ({ getValue }) => (
+          <List
+            direction="horizontal"
+            gap={2}
+            data={getValue() || []}
+            renderer={(value, index) => (
+              <Tag color={roleColors.get(value)} key={index}>
+                {value}
+              </Tag>
+            )}
+          />
+        ),
       }),
     ],
     [columnHelper]
@@ -144,8 +151,8 @@ export const PeoplePage: NextPage<IPeoplePageProps> = ({ personId }) => {
         <TablePagination
           isNextDisabled={!table.getCanNextPage()}
           isPrevDisabled={!table.getCanPreviousPage()}
-          onNext={() => table.nextPage()}
-          onPrev={() => table.previousPage()}
+          onNext={table.nextPage}
+          onPrev={table.previousPage}
         />
       </BasicContentLayout>
     </BasicLayout>

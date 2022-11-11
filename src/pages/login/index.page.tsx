@@ -1,7 +1,7 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
-import * as Styled from '../../styles/login.styles';
+import * as Styled from './login.styles';
 import { Text } from '../../components/atoms/text';
 
 import { withPageRedirectMiddleware } from '../../middlewares/PageRedirectMiddleware';

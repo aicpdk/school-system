@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { themeBorderRadiusSelector, themeColorSelector, themeFontSizeSelector, themePaddingSelector } from '../../../config/theme';
-import { getServerSideProps } from '../../../pages';
+import { getServerSideProps } from '../../../pages/index.page';
 import { IInputFieldProps } from './Input.types';
 
 export const Container = styled.div`

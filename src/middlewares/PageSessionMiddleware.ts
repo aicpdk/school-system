@@ -8,22 +8,23 @@ export const withPageSessionMiddleware = (handler: GetServerSideProps) =>
   withIronSessionSsr(async (context) => {
     const { user } = context.req.session;
     const prisma = new PrismaClient();
-
-    const redirect = () => {
-      context.req.session.destroy();
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: true,
-        },
+    try {
+      const redirect = () => {
+        context.req.session.destroy();
+        return {
+          redirect: {
+            destination: '/login',
+            permanent: true,
+          },
+        };
       };
-    };
 
-    if (!user?.userId) return redirect();
+      if (!user?.userId) return redirect();
 
-    const res = await getUserById(prisma, user.userId);
-    await prisma.$disconnect();
-    if (!res) return redirect();
-
+      const res = await getUserById(prisma, user.userId);
+      if (!res) return redirect();
+    } finally {
+      await prisma.$disconnect();
+    }
     return handler(context);
   }, sessionConfig);

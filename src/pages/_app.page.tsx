@@ -1,7 +1,6 @@
 import NextNProgress from 'nextjs-progressbar';
-import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from 'styled-components';
-import { GlobalStyles, Container, Content } from '../styles/global.styles';
+import { GlobalStyles, Container, Content } from './global.styles';
 import 'animate.css';
 import { theme } from '../config/theme';
 import { IMenubarItem } from '../components/organisms/menubar/Menubar.types';
@@ -31,6 +30,11 @@ const items: IMenubarItem[] = [
   {
     link: '/people',
     text: 'People',
+    icon: IconEnum.Employee,
+  },
+  {
+    link: '/classes',
+    text: 'Class',
     icon: IconEnum.Employee,
   },
   {

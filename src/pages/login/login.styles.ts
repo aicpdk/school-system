@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { themePaddingSelector } from '../config/theme';
+import { themePaddingSelector } from '../../config/theme';
 
 export const Page = styled.div`
   width: 100%;

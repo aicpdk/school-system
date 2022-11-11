@@ -17,11 +17,15 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse): Promis
   console.log({ authentication });
   const prisma = new PrismaClient();
   try {
-    const schools = await prisma.school.findMany({
+    const schools = await prisma.personToSchool.findMany({
       where: {
-        People: {
-          every: {
-            personId: authentication.personId,
+        personId: authentication.personId,
+      },
+      select: {
+        School: {
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
@@ -37,7 +41,7 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse): Promis
     req.session.person = {
       personId: authentication.personId,
     };
-    req.session.schools = schools.map((school) => ({ id: school.id, name: school.name }));
+    req.session.schools = schools.map((school) => ({ id: school.School.id, name: school.School.name }));
 
     console.log(req.session);
     await req.session.save();

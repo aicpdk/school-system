@@ -1,12 +1,10 @@
 import { faker } from '@faker-js/faker';
-import { PrismaClient, ResourceType, PermissionType, Permission } from '@prisma/client';
+import { PrismaClient, ResourceType, PermissionType, Permission, RoleType } from '@prisma/client';
 import { hash } from '../src/services/server/bcrypt.service';
+import { mock } from './mocks';
+import { randomIntFromInterval } from './mocks/util';
 
 const prisma = new PrismaClient();
-
-function randomIntFromInterval(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
 
 async function main() {
   try {
@@ -15,33 +13,22 @@ async function main() {
     await prisma.user.deleteMany({});
     await prisma.role.deleteMany({});
     await prisma.personToSchool.deleteMany({});
+    await prisma.personToClass.deleteMany({});
+    await prisma.class.deleteMany({});
     await prisma.school.deleteMany({});
     await prisma.person.deleteMany({});
 
     const storedSchool = await prisma.school.create({
-      data: {
-        id: faker.datatype.uuid(),
-        name: faker.commerce.department(),
-        adress: faker.address.streetAddress(),
-        city: faker.address.cityName(),
-        zip: Number(faker.address.zipCode('#####')),
-        countryCode: faker.address.countryCode(),
-      },
+      data: mock.school(),
     });
 
-    const people = Array.from({ length: 100 }).map(() => ({
-      id: faker.datatype.uuid(),
-      firstname: faker.name.firstName(),
-      lastname: faker.name.lastName(),
-      address: faker.address.street(),
-      age: randomIntFromInterval(20, 60),
-      phone: faker.phone.number('+45 ########'),
-      city: faker.address.cityName(),
-      countryCode: faker.address.countryCode(),
-      zip: Number(faker.address.zipCode('####')),
-    }));
+    const people = Array.from({ length: 100 }).map(() => mock.person());
     const storedPeople = await prisma.person.createMany({
       data: people,
+    });
+
+    const _linkPeopleToSchool = await prisma.personToSchool.createMany({
+      data: people.map((person) => ({ personId: person.id, schoolId: storedSchool.id })),
     });
 
     const permissionTypes: PermissionType[] = ['READ', 'READ_ALL', 'WRITE', 'WRITE_ALL'];
@@ -56,7 +43,6 @@ async function main() {
         });
       });
     });
-
     const createPermissions = permissions.map((permission) =>
       prisma.permission.create({
         data: permission,
@@ -71,7 +57,6 @@ async function main() {
         name: 'ADMIN',
       },
     });
-
     await prisma.roleToPermission.createMany({
       data: adminPermissions.map((permission) => ({
         permissionId: permission.id,
@@ -82,9 +67,7 @@ async function main() {
     const hashedPassword = await hash('Test!123');
     const storedAdmin = await prisma.user.create({
       data: {
-        id: faker.datatype.uuid(),
-        password: hashedPassword,
-        username: 'admin',
+        ...mock.user('admin', hashedPassword),
         isVerified: false,
         Person: {
           connect: {
@@ -121,9 +104,7 @@ async function main() {
       Array.from({ length: 20 }).map((_, index) =>
         prisma.user.create({
           data: {
-            id: faker.datatype.uuid(),
-            password: hashedPassword,
-            username: `teacher${index}`,
+            ...mock.user(`teacher${index}`, hashedPassword),
             isVerified: false,
             Person: {
               connect: {
@@ -132,13 +113,48 @@ async function main() {
             },
             Role: {
               connect: {
-                id: adminRole.id,
+                id: teacherRole.id,
               },
             },
           },
         })
       )
     );
+
+    const classes = Array.from({ length: 10 }).map(() => {
+      return prisma.class.create({
+        data: {
+          ...mock.schoolClass(),
+          CreatedBy: {
+            connect: {
+              id: people[0].id,
+            },
+          },
+          School: {
+            connect: {
+              id: storedSchool.id,
+            },
+          },
+        },
+      });
+    });
+    const storedClasses = await Promise.all(classes);
+
+    // prisma.personToClass.create({
+    //   data: {
+    //     Person: {
+    //       connect: person.id,
+    //     },
+    //     Class: {
+    //       connect: {
+    //         id: storedClasses[randomIntFromInterval(0, storedClasses.length - 1)].id,
+    //       },
+    //     },
+    //     joinedAt: faker.date.past(),
+    //     roleType: '',
+    //   },
+    // });
+    const peopleToClass = people.map(() => {});
   } finally {
     prisma.$disconnect();
   }
