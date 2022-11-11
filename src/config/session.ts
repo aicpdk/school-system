@@ -1,12 +1,17 @@
-import { IUser } from '../interfaces/IUser';
-
 declare module 'iron-session' {
   interface IronSessionData {
-    user: IUser;
-    auth: {
-      accessToken: string;
-      idToken: string;
+    user: {
+      userId: string;
+      firstname: string;
+      lastname: string | null;
     };
+    person: {
+      personId: string;
+    };
+    schools: {
+      id: string;
+      name: string;
+    }[];
   }
 }
 

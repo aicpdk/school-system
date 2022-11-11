@@ -9,7 +9,6 @@ import { withApiSessionMiddleware } from '../../../middlewares/ApiSessionMiddlew
 
 export const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   req.session.destroy();
-
   res.redirect(301, '/login');
 };
 

@@ -1,17 +1,5 @@
 import { ITableFooterProps, ITableProps, ITableSearchProps } from './Table.types';
-import {
-  Table as StyledTable,
-  Column,
-  DataCell,
-  Row,
-  TBody,
-  THead,
-  LeftPagination,
-  TablePaginationContainer,
-  RightPagination,
-  TableInputContainer,
-  TableInput,
-} from './Table.styled';
+import { Table as StyledTable, Column, DataCell, Row, TBody, THead, TablePaginationContainer, TableInputContainer, TableInput } from './Table.styled';
 import { Button } from '../button';
 import { Icon } from '../icon';
 import { IconEnum } from '../icon/icon.types';

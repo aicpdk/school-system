@@ -6,24 +6,46 @@ import { withApiSessionMiddleware } from '../../../middlewares/ApiSessionMiddlew
 import { HttpValidationMiddleware } from '../../../middlewares/HttpValidationMiddleware';
 import { LoginBody } from '../../../dto/LoginBody.dto';
 import { authenticate } from '../../../services/server/authentication.service';
+import { PrismaClient } from '@prisma/client';
 
 // const cookieExpirationDate = 1000 * 60 * 60 * 24 * 2;
 
 export const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   const { username, password } = req.body as LoginBody;
 
-  const { lastname, personId, firstname, userId } = await authenticate(username, password);
+  const authentication = await authenticate(username, password);
+  console.log({ authentication });
+  const prisma = new PrismaClient();
+  try {
+    const schools = await prisma.school.findMany({
+      where: {
+        People: {
+          every: {
+            personId: authentication.personId,
+          },
+        },
+      },
+    });
 
-  req.session.user = {
-    personId,
-    firstname,
-    userId,
-    lastname,
-  };
+    console.log({ schools: schools });
 
-  await req.session.save();
+    req.session.user = {
+      userId: authentication.userId,
+      firstname: authentication.firstname,
+      lastname: authentication.lastname,
+    };
+    req.session.person = {
+      personId: authentication.personId,
+    };
+    req.session.schools = schools.map((school) => ({ id: school.id, name: school.name }));
 
-  res.redirect(301, '/');
+    console.log(req.session);
+    await req.session.save();
+
+    res.redirect(301, '/');
+  } finally {
+    await prisma.$disconnect();
+  }
 };
 
 export default withApiSessionMiddleware(use(HttpErrorMiddleware, HttpMethodMiddleware(['POST']), HttpValidationMiddleware(LoginBody))(handler));

@@ -33,6 +33,11 @@ const items: IMenubarItem[] = [
     text: 'People',
     icon: IconEnum.Employee,
   },
+  {
+    link: '/api/auth/logout',
+    text: 'Logout',
+    icon: IconEnum.Employee,
+  },
 ];
 
 function MyApp({ Component, pageProps: { session, ...pageProps }, user }: any) {

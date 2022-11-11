@@ -1,4 +1,4 @@
-import { Person, RoleType } from '@prisma/client';
+import { RoleType } from '@prisma/client';
 import { GetServerSideProps, NextPage } from 'next';
 import { withPageSessionMiddleware } from '../../middlewares/PageSessionMiddleware';
 import {
@@ -155,11 +155,9 @@ export const PeoplePage: NextPage<IPeoplePageProps> = ({ personId }) => {
 export default PeoplePage;
 
 const serverSideProps: GetServerSideProps<IPeoplePageProps> = async ({ req }) => {
-  const { user } = req.session;
-
   return {
     props: {
-      personId: user.personId,
+      personId: req.session.person.personId,
     },
   };
 };

@@ -44,10 +44,6 @@ async function main() {
       data: people,
     });
 
-    const _linkPeopleToSchool = await prisma.personToSchool.createMany({
-      data: people.map((person) => ({ personId: person.id, schoolId: storedSchool.id })),
-    });
-
     const permissionTypes: PermissionType[] = ['READ', 'READ_ALL', 'WRITE', 'WRITE_ALL'];
     const resourceTypes: ResourceType[] = ['ATTENDENCE', 'CLASS', 'SCHOOL', 'STUDENT', 'TEACHER', 'USER'];
     const permissions: Permission[] = [];
@@ -69,7 +65,6 @@ async function main() {
     const storedPermissions = await Promise.all(createPermissions);
 
     const adminPermissions = permissions.filter((permission) => ['READ_ALL', 'WRITE_ALL'].includes(permission.type));
-
     const adminRole = await prisma.role.create({
       data: {
         id: faker.datatype.uuid(),
@@ -85,7 +80,7 @@ async function main() {
     });
 
     const hashedPassword = await hash('Test!123');
-    await prisma.user.create({
+    const storedAdmin = await prisma.user.create({
       data: {
         id: faker.datatype.uuid(),
         password: hashedPassword,
@@ -103,6 +98,47 @@ async function main() {
         },
       },
     });
+
+    const teacherPermission = permissions.filter(
+      (permission) =>
+        (permission.type === 'READ' && ['STUDENT', 'CLASS'].includes(permission.resource)) ||
+        (permission.type === 'READ' && ['ATTENDENCE'].includes(permission.resource))
+    );
+    const teacherRole = await prisma.role.create({
+      data: {
+        id: faker.datatype.uuid(),
+        name: 'TEACHER',
+      },
+    });
+    await prisma.roleToPermission.createMany({
+      data: teacherPermission.map((permission) => ({
+        permissionId: permission.id,
+        roleId: teacherRole.id,
+      })),
+    });
+
+    const storedTeachers = await prisma.$transaction(
+      Array.from({ length: 20 }).map((_, index) =>
+        prisma.user.create({
+          data: {
+            id: faker.datatype.uuid(),
+            password: hashedPassword,
+            username: `teacher${index}`,
+            isVerified: false,
+            Person: {
+              connect: {
+                id: people[randomIntFromInterval(0, 99)].id,
+              },
+            },
+            Role: {
+              connect: {
+                id: adminRole.id,
+              },
+            },
+          },
+        })
+      )
+    );
   } finally {
     prisma.$disconnect();
   }

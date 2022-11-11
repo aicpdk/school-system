@@ -11,34 +11,17 @@ import { ResourceNotFound } from '../../../errors/ResourceNotFound';
 
 export const handler = async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   const { userId } = req.session.user;
+  const schools = req.session.schools;
+
+  console.log(userId, schools);
 
   const prisma = new PrismaClient();
   try {
-    const school = await prisma.school.findFirst({
-      where: {
-        People: {
-          every: {
-            Person: {
-              Users: {
-                every: {
-                  id: userId,
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!school) {
-      throw new ResourceNotFound('school does not exist');
-    }
-
     const response = await prisma.person.findMany({
       where: {
         Schools: {
           every: {
-            schoolId: school.id,
+            schoolId: schools[0].id,
           },
         },
       },
@@ -55,6 +38,8 @@ export const handler = async (req: NextApiRequest, res: NextApiResponse): Promis
         },
       },
     });
+
+    console.log({ response });
 
     const people = response.map((person) => {
       const roles = person.Users.map((user) => user.Role.name);
