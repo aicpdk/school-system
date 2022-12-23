@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+  // Further reading:
+  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+  url      = env("DATABASE_URL")
+}
+
+// Necessary for Next auth
+model Account {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username String @unique
+  password String
+  personId String @db.Uuid
+
+  // CreatedBy used to track who created the account
+  createdById     String?   @db.Uuid
+  createdAccounts Account[] @relation("CreatedBy")
+  createdBy       Account?  @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+
+  person        Person         @relation(fields: [personId], references: [id])
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  jwtid        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt    DateTime @default(now())
+  createdjwtid String?  @db.Uuid
+
+  accountId String  @db.Uuid
+  account   Account @relation(fields: [accountId], references: [id])
+}
+
+model Person {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  account Account[]
+}
