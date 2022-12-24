@@ -1,4 +1,4 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthOptions, type User } from "next-auth";
 import CredentialProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 
@@ -9,7 +9,7 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialProvider({
       name: "Credentials",
-      authorize: async (credentials) => {
+      authorize: async (credentials): Promise<User> => {
         if (!credentials?.username || !credentials?.password) {
           throw new Error("Invalid credentials");
         }
@@ -40,12 +40,13 @@ export const authOptions: NextAuthOptions = {
         if (!person) throw new Error("Person not found");
 
         return {
-          id: "",
           accountId: account.id,
           personId: person.id,
           name: person.name,
           email: person.email,
           image: person.image,
+          isVerified: person.emailVerified !== null,
+          id: "",
         };
       },
       credentials: {
