@@ -5,6 +5,7 @@ type ButtonProps = {
   type?: "outlined" | "filled" | "text";
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   widthFull?: boolean;
+  isSkeleton?: boolean;
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -12,7 +13,12 @@ export const Button: React.FC<ButtonProps> = ({
   type = "filled",
   onClick,
   widthFull,
+  isSkeleton,
 }) => {
+  if (isSkeleton) {
+    return <div className="h-6 w-32 rounded bg-gray-200" />;
+  }
+
   return (
     <button
       type="submit"

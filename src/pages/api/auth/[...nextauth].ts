@@ -1,8 +1,8 @@
 import NextAuth, { type NextAuthOptions, type User } from "next-auth";
-import CredentialProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
-
-import { prisma } from "../../../server/db/client";
+import { prisma } from "@db/client";
+import CredentialProvider from "next-auth/providers/credentials";
+console.log(CredentialProvider);
 
 export const authOptions: NextAuthOptions = {
   // Include user.id on session
@@ -14,39 +14,28 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
-        const account = await prisma.account.findUnique({
+        const user = await prisma.user.findUnique({
           where: { username: credentials.username },
         });
 
-        if (!account) {
+        if (!user) {
           throw new Error("Username or Password does not exist");
         }
 
         const isValid = await bcrypt.compare(
           credentials.password,
-          account.password
+          user.password
         );
 
         if (!isValid) {
           throw new Error("Username or Password does not exist");
         }
 
-        const person = await prisma.person.findUnique({
-          where: {
-            id: account.personId,
-          },
-        });
-
-        if (!person) throw new Error("Person not found");
-
         return {
-          accountId: account.id,
-          personId: person.id,
-          name: person.name,
-          email: person.email,
-          image: person.image,
-          isVerified: person.emailVerified !== null,
-          id: "",
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
         };
       },
       credentials: {

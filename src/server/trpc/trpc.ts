@@ -21,10 +21,28 @@ export const publicProcedure = t.procedure;
  * Reusable middleware to ensure
  * users are logged in
  */
-const isAuthed = t.middleware(({ ctx, next }) => {
+const isAuthed = t.middleware(async ({ ctx, next }) => {
   if (!ctx.session || !ctx.session.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
+  console.log("session exist");
+
+  if (new Date(ctx.session.expires).getTime() < Date.now()) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  console.log("valid expiration date");
+
+  const user = await ctx.prisma.user.findUnique({
+    where: { id: ctx.session.user.id },
+  });
+
+  if (!user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  console.log("user exist");
+
   return next({
     ctx: {
       // infers the `session` as non-nullable

@@ -3,7 +3,7 @@ import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 
 import { getServerAuthSession } from "../common/get-server-auth-session";
-import { prisma } from "../db/client";
+import { prisma } from "@db/client";
 
 type CreateContextOptions = {
   session: Session | null;
@@ -15,11 +15,14 @@ type CreateContextOptions = {
  * @see https://create.t3.gg/en/usage/trpc#-servertrpccontextts
  **/
 export const createContextInner = async (opts: CreateContextOptions) => {
+  console.log({ prisma });
   return {
     session: opts.session,
     prisma,
   };
 };
+
+export type ContextInner = inferAsyncReturnType<typeof createContextInner>;
 
 /**
  * This is the actual context you'll use in your router

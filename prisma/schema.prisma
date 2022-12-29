@@ -15,37 +15,148 @@ datasource db {
 }
 
 // Necessary for Next auth
-model Account {
-  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username String @unique
-  password String
-  personId String @db.Uuid
+model User {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username        String   @unique
+  name            String
+  email           String   @unique
+  isEmailVerified Boolean? @default(false)
+  phone           String?
+  isPhoneVerified Boolean? @default(false)
+  password        String
+  image           String?
 
   // CreatedBy used to track who created the account
-  createdById     String?   @db.Uuid
-  createdAccounts Account[] @relation("CreatedBy")
-  createdBy       Account?  @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt       DateTime  @default(now())
-
-  person        Person         @relation(fields: [personId], references: [id])
-  refreshTokens RefreshToken[]
+  createdById      String?               @db.Uuid
+  createdAccounts  User[]                @relation("CreatedBy")
+  createdBy        User?                 @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt        DateTime              @default(now())
+  schoolUsers      SchoolUsers[]
+  classUsers       ClassUsers[]
+  createdEvents    Event[]
+  eventAttendances EventUserAttendance[]
+  registeredEvents EventUserAttendance[] @relation("registeredBy")
 }
 
-model RefreshToken {
-  jwtid        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+enum ClassRoles {
+  TEACHER
+  STUDENT
+  GUEST
+}
+
+model SchoolUsers {
+  schoolId  String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  school  School  @relation(fields: [schoolId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+  class   Class?  @relation(fields: [classId], references: [id])
+  classId String? @db.Uuid
+
+  @@id([schoolId, userId])
+}
+
+model School {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  address   String
+  city      String
+  state     String
+  zip       String
+  phone     String
+  createdAt DateTime @default(now())
+
+  students SchoolUsers[]
+  classes  Class[]
+}
+
+model ClassUsers {
+  classId   String     @db.Uuid
+  userId    String     @db.Uuid
+  createdAt DateTime   @default(now())
+  role      ClassRoles @default(STUDENT)
+
+  joinedAt DateTime @default(now())
+
+  class Class @relation(fields: [classId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@id([classId, userId])
+}
+
+model Class {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  createdAt DateTime @default(now())
+
+  schoolId String @db.Uuid
+  school   School @relation(fields: [schoolId], references: [id])
+
+  students      SchoolUsers[]
+  classUsers    ClassUsers[]
+  eventInstance EventInstance[]
+}
+
+model Event {
+  id             String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title          String
+  description    String
+  startTime      DateTime
+  endTime        DateTime
+  allDay         Boolean
+  city           String
+  state          String
+  zip            String
+  address        String
+  createdAt      DateTime              @default(now())
+  createdBy      User                  @relation(fields: [createdById], references: [id])
+  createdById    String                @db.Uuid
+  attendees      EventUserAttendance[]
+  repeat         RepeatFrequency
+  eventInstances EventInstance[]
+}
+
+model EventInstance {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  classId      String   @db.Uuid
+  eventId      String   @db.Uuid
+  classEventId String?  @db.Uuid
+  startTime    DateTime
+  endTime      DateTime
+  allDay       Boolean
   createdAt    DateTime @default(now())
-  createdjwtid String?  @db.Uuid
 
-  accountId String  @db.Uuid
-  account   Account @relation(fields: [accountId], references: [id])
+  event               Event                 @relation(fields: [eventId], references: [id])
+  class               Class                 @relation(fields: [classId], references: [id])
+  eventUserAttendance EventUserAttendance[]
 }
 
-model Person {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
+model EventUserAttendance {
+  eventId         String   @db.Uuid
+  userId          String   @db.Uuid
+  joinedAt        DateTime @default(now())
+  registeredById  String   @db.Uuid
+  eventInstanceId String   @db.Uuid
 
-  account Account[]
+  registeredBy  User          @relation("registeredBy", fields: [registeredById], references: [id])
+  event         Event         @relation(fields: [eventId], references: [id])
+  eventInstance EventInstance @relation(fields: [eventInstanceId], references: [id])
+  user          User          @relation(fields: [userId], references: [id])
+
+  @@id([eventId, userId])
+}
+
+enum AttendanceStatus {
+  ATTENDED
+  NOT_ATTENDED
+  MAYBE
+}
+
+enum RepeatFrequency {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
