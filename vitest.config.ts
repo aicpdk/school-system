@@ -7,13 +7,10 @@ export default defineConfig({
     //
   ],
   test: {
-    // deps: {
-    //   interopDefault: true,
-    // },
     testTimeout: 1000,
     reporters: ["verbose"],
-    typecheck: {
-      ignoreSourceErrors: true,
+    deps: {
+      interopDefault: true,
     },
   },
   resolve: {

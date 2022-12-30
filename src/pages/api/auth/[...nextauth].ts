@@ -1,8 +1,7 @@
 import NextAuth, { type NextAuthOptions, type User } from "next-auth";
-import bcrypt from "bcrypt";
-import { prisma } from "@db/client";
 import CredentialProvider from "next-auth/providers/credentials";
-console.log(CredentialProvider);
+import bcrypt from "bcrypt";
+import { prisma } from "../../../server/db/client";
 
 export const authOptions: NextAuthOptions = {
   // Include user.id on session
